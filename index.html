@@ -561,8 +561,8 @@ td.subject-td input { text-align: right; min-width: 110px; }
   <div class="school-info-card">
     <div class="info-grid">
       <div class="info-field">
-        <label>اسم المدرسة</label>
-        <input type="text" id="schoolNamePkg" placeholder="أدخل اسم المدرسة">
+        <label>الاسم</label>
+        <input type="text" id="schoolNamePkg" placeholder="مدرسة، مكتبة، أو اسم الأستاذ">
       </div>
       <div class="info-field">
         <label>رقم الاتصال</label>
@@ -604,7 +604,7 @@ td.subject-td input { text-align: right; min-width: 110px; }
 
   <!-- BOTTOM ACTIONS -->
   <div class="bottom-actions">
-    <button class="btn-new-section" onclick="PkgApp.addSection()">+ إضافة صف جديد</button>
+    <button class="btn-new-section" onclick="PkgApp.addSection()">+ إضافة مجموعة جديدة</button>
     <button class="btn-pdf btn-pdf-pkg" onclick="PkgApp.exportPDF()">⬇ تحميل PDF</button>
   </div>
 
@@ -774,11 +774,10 @@ function defaultRows() {
 function addSection() {
   sections.push({
     id: sectionId++,
-    grade: 'الأول ابتدائي',
     rows: defaultRows()
   });
   renderAll();
-  showToast('تمت إضافة صف جديد');
+  showToast('تمت إضافة مجموعة جديدة');
 }
 
 function deleteSection(id) {
@@ -839,11 +838,6 @@ function applyGlobalPrice() {
   showToast('✅ تم تحديث سعر البكج في جميع المواد');
 }
 
-function updateGrade(sectionId, value) {
-  const sec = sections.find(s => s.id === sectionId);
-  if (sec) sec.grade = value;
-}
-
 // ============================================================
 // RENDER
 // ============================================================
@@ -862,14 +856,10 @@ function buildSectionEl(sec) {
   div.id = `sec-pkg-${sec.id}`;
 
   div.innerHTML = `
-    <div class="section-top">
-      <div class="grade-field">
-        <label>اسم الصف</label>
-        <input type="text" value="${sec.grade}" oninput="PkgApp.updateGrade(${sec.id}, this.value)" placeholder="الأول ابتدائي">
-      </div>
+    <div class="section-top" style="justify-content:flex-end">
       <div class="section-actions">
         <button class="btn-add-subject" onclick="PkgApp.addRowToSection(${sec.id})">+ إضافة مادة</button>
-        <button class="btn-delete-section" onclick="PkgApp.deleteSection(${sec.id})" title="حذف الصف">🗑</button>
+        <button class="btn-delete-section" onclick="PkgApp.deleteSection(${sec.id})" title="حذف المجموعة">🗑</button>
       </div>
     </div>
     <div class="table-wrap">
@@ -890,7 +880,7 @@ function buildSectionEl(sec) {
     </div>
     <div class="section-total-bar" style="flex-direction:column;align-items:flex-start;gap:4px">
       <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
-        <span class="label">المجموع لهذا الصف:</span>
+        <span class="label">المجموع لهذه المجموعة:</span>
         <span class="value" id="sectotal-pkg-${sec.id}" style="text-decoration:none!important">0</span>
       </div>
       <div style="font-size:12px;color:#555;font-weight:600">
@@ -1063,10 +1053,6 @@ async function exportPDF() {
 
       sectionsHTML += `
     <div style="margin-bottom:20px">
-      <div class="pdf-row" style="background:#e8edf8;border:1.5px solid #1a3a8f;border-radius:6px;padding:7px 14px;margin-bottom:4px;display:flex;align-items:center;gap:8px">
-        <span style="display:inline-block;width:5px;height:20px;background:#1a3a8f;border-radius:3px;margin-left:8px"></span>
-        <span style="font-size:13px;font-weight:700;color:#1a3a8f">الصف: ${sec.grade}</span>
-      </div>
       <table style="width:100%;border-collapse:collapse;font-size:12px">
         <thead>
           <tr class="pdf-row" style="background:#1a3a8f;color:#fff">
@@ -1223,7 +1209,7 @@ function showToast(msg) {
 // INIT — start with one section
 // ============================================================
 addSection();
-return { addSection, deleteSection, addRowToSection, deleteRow, updateRow, updateGrade, applyGlobalPrice, exportPDF };
+return { addSection, deleteSection, addRowToSection, deleteRow, updateRow, applyGlobalPrice, exportPDF };
 })();
 
 </script>
