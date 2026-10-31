@@ -367,6 +367,24 @@ td.subject-td input { text-align: right; min-width: 110px; }
 .btn-pdf:hover { background: #e65100; }
 .btn-pdf:disabled { background: #ffb37a; cursor: not-allowed; }
 
+.btn-save {
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 22px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.2s;
+}
+
+.btn-save:hover { background: #1b5e20; }
+
 /* ===== TOAST ===== */
 .toast {
   position: fixed;
@@ -470,6 +488,24 @@ td.subject-td input { text-align: right; min-width: 110px; }
 
 .view-hidden { display: none; }
 
+/* ===== SINGLE LIST (package price) ===== */
+.list-hint { font-size: 12.5px; font-weight: 700; color: #1a3a8f; padding: 12px 16px 4px; }
+.view-pkg table { min-width: 0; }
+.view-pkg th, .view-pkg td { padding-left: 3px; padding-right: 3px; }
+.view-pkg td.subject-td input { min-width: 96px; font-size: 12px; padding: 6px 4px; }
+.view-pkg td input[type=number] { min-width: 46px; padding: 6px 2px; font-size: 12.5px; }
+.view-pkg th { font-size: 11.5px; }
+td.check-td { width: 40px; }
+.top-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.top-row .btn-back { margin-bottom: 0; }
+.btn-newlist { background: #1a3a8f; color: #fff; }
+.btn-newlist:hover { background: #122d72; }
+.add-grade-select { width: 100%; border: 1.5px dashed #1a3a8f; background: #f0f4ff; color: #1a3a8f; border-radius: 8px; padding: 9px 10px; font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700; }
+td input.row-check { width: 26px; height: 26px; padding: 0; accent-color: #1a3a8f; cursor: pointer; }
+td input:disabled { background: #eee; color: #aaa; }
+tr.row-off td:not(.check-td) { opacity: 0.55; }
+tr.row-off td.subject-td input { background: transparent; border-color: transparent; }
+
 /* ===== INSTALL BANNER ===== */
 #installBanner {
   display: none;
@@ -525,11 +561,19 @@ td.subject-td input { text-align: right; min-width: 110px; }
 
 <div id="homeView" class="container">
   <div class="home-cards">
+    <button class="home-card" onclick="if (PkgApp.startNew()) showView('pkg')">
+      <div class="home-card-icon">🏫</div>
+      <div class="home-card-text">
+        <div class="home-card-title">مدرسة / مكتبة</div>
+        <div class="home-card-sub">ابدأ قائمة جديدة بكل الصفوف لمدرسة أو مكتبة</div>
+      </div>
+      <div class="home-card-arrow">◀</div>
+    </button>
     <button class="home-card" onclick="showView('pkg')">
       <div class="home-card-icon">📦</div>
       <div class="home-card-text">
         <div class="home-card-title">قائمة بسعر البكج</div>
-        <div class="home-card-sub">إدخال سعر البكج يدوياً لكل مادة</div>
+        <div class="home-card-sub">قائمة واحدة بكل الصفوف — اختر الصف واكتب العدد وسعر البكج</div>
       </div>
       <div class="home-card-arrow">◀</div>
     </button>
@@ -549,20 +593,28 @@ td.subject-td input { text-align: right; min-width: 110px; }
       </div>
       <div class="home-card-arrow">◀</div>
     </button>
+    <button class="home-card" onclick="showView('lists')">
+      <div class="home-card-icon">📋</div>
+      <div class="home-card-text">
+        <div class="home-card-title">قوائم محفوظة</div>
+        <div class="home-card-sub">الرجوع لأي قائمة سابقة والتعديل عليها</div>
+      </div>
+      <div class="home-card-arrow">◀</div>
+    </button>
   </div>
 </div>
 
 <div id="pkgView" class="view-hidden">
   <div class="container">
-    <button class="btn-back" onclick="showView('home')">→ رجوع للقائمة الرئيسية</button>
+    <div class="top-row"><button class="btn-back" onclick="showView('home')">→ رجوع للقائمة الرئيسية</button><button class="btn-back btn-newlist" onclick="PkgApp.startNew()">🆕 قائمة جديدة</button></div>
 <div class="view-pkg">
 
   <!-- SCHOOL INFO -->
   <div class="school-info-card">
     <div class="info-grid">
       <div class="info-field">
-        <label>الاسم</label>
-        <input type="text" id="schoolNamePkg" placeholder="مدرسة، مكتبة، أو اسم الأستاذ">
+        <label>اسم المدرسة / المكتبة</label>
+        <input type="text" id="schoolNamePkg" placeholder="أدخل اسم المدرسة أو المكتبة">
       </div>
       <div class="info-field">
         <label>رقم الاتصال</label>
@@ -582,14 +634,31 @@ td.subject-td input { text-align: right; min-width: 110px; }
       </div>
       <div class="info-field" style="display:flex;align-items:flex-end">
         <div style="background:#e8edf8;border-radius:8px;padding:8px 12px;font-size:12px;color:#555;width:100%">
-          💡 عند تعبئة السعر الموحد سيتحدث تلقائياً في جميع المواد. يمكنك أيضاً إدخال سعر بكج مختلف لكل مادة يدوياً.
+          💡 عند تعبئة السعر الموحد سيتحدث تلقائياً في جميع الصفوف. يمكنك أيضاً تغيير سعر البكج لأي صف يدوياً.
         </div>
       </div>
     </div>
   </div>
 
-  <!-- SECTIONS AREA -->
-  <div id="sectionsAreaPkg"></div>
+  <!-- ONE LIST: ALL GRADES -->
+  <div class="section-card">
+    <div class="list-hint">ضع ✓ على المربع ليظهر الصف في القائمة، ثم اكتب سعر البكج والعدد له</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:40px">✓</th>
+            <th>اسم الصف</th>
+            <th>سعر البكج</th>
+            <th>العدد</th>
+            <th>السعر الكلي</th>
+          </tr>
+        </thead>
+        <tbody id="pkgRowsBody"></tbody>
+      </table>
+    </div>
+    <div id="pkgAddBox" style="padding:10px 12px 12px"></div>
+  </div>
 
   <!-- GRAND TOTAL -->
   <div class="grand-total-bar" style="flex-direction:column;align-items:flex-start;gap:6px">
@@ -600,13 +669,19 @@ td.subject-td input { text-align: right; min-width: 110px; }
     <div id="grandTotalWordsPkg" style="font-size:13px;color:#1a3a8f;font-weight:600;padding:6px 10px;background:#e8edf8;border-radius:6px;width:100%;text-align:right">
       صفر دينار عراقي
     </div>
+    <div style="font-size:12px;color:#555;font-weight:600">
+      عدد الصفوف: <span id="pkgGradesCountPkg" style="color:#1a3a8f;font-weight:700">0</span>
+      &nbsp;|&nbsp; مجموع البكجات: <span id="pkgCountPkg" style="color:#1a3a8f;font-weight:700">0</span> بكج
+    </div>
   </div>
 
   <!-- BOTTOM ACTIONS -->
   <div class="bottom-actions">
-    <button class="btn-new-section" onclick="PkgApp.addSection()">+ إضافة مجموعة جديدة</button>
+    <button class="btn-new-section" onclick="PkgApp.addCustomRow()">+ إضافة صف جديد</button>
+    <button class="btn-save" onclick="PkgApp.saveCurrentList()">💾 حفظ القائمة</button>
     <button class="btn-pdf btn-pdf-pkg" onclick="PkgApp.exportPDF()">⬇ تحميل PDF</button>
   </div>
+
 
 </div>
 
@@ -615,15 +690,15 @@ td.subject-td input { text-align: right; min-width: 110px; }
 
 <div id="pageView" class="view-hidden">
   <div class="container">
-    <button class="btn-back" onclick="showView('home')">→ رجوع للقائمة الرئيسية</button>
+    <div class="top-row"><button class="btn-back" onclick="showView('home')">→ رجوع للقائمة الرئيسية</button><button class="btn-back btn-newlist" onclick="PageApp.startNew()">🆕 قائمة جديدة</button></div>
 <div class="view-page">
 
   <!-- SCHOOL INFO -->
   <div class="school-info-card">
     <div class="info-grid">
       <div class="info-field">
-        <label>اسم المدرسة</label>
-        <input type="text" id="schoolNamePage" placeholder="أدخل اسم المدرسة">
+        <label>اسم المدرسة / المكتبة</label>
+        <input type="text" id="schoolNamePage" placeholder="أدخل اسم المدرسة أو المكتبة">
       </div>
       <div class="info-field">
         <label>رقم الاتصال</label>
@@ -672,6 +747,7 @@ td.subject-td input { text-align: right; min-width: 110px; }
   <!-- BOTTOM ACTIONS -->
   <div class="bottom-actions">
     <button class="btn-new-section" onclick="PageApp.addSection()">+ إضافة صف جديد</button>
+    <button class="btn-save" onclick="PageApp.saveCurrentList()">💾 حفظ القائمة</button>
     <button class="btn-pdf btn-pdf-page" onclick="PageApp.exportPDF()">⬇ تحميل PDF</button>
   </div>
 
@@ -682,7 +758,7 @@ td.subject-td input { text-align: right; min-width: 110px; }
 
 <div id="matView" class="view-hidden">
   <div class="container">
-    <button class="btn-back" onclick="showView('home')">→ رجوع للقائمة الرئيسية</button>
+    <div class="top-row"><button class="btn-back" onclick="showView('home')">→ رجوع للقائمة الرئيسية</button><button class="btn-back btn-newlist" onclick="MatApp.startNew()">🆕 قائمة جديدة</button></div>
 
     <!-- CUSTOMER INFO -->
     <div class="school-info-card">
@@ -734,9 +810,23 @@ td.subject-td input { text-align: right; min-width: 110px; }
     <!-- BOTTOM ACTIONS -->
     <div class="bottom-actions">
       <button class="btn-new-section" onclick="MatApp.addRow()">+ إضافة مادة</button>
+      <button class="btn-save" onclick="MatApp.saveCurrentList()">💾 حفظ القائمة</button>
       <button class="btn-pdf btn-pdf-mat" onclick="MatApp.exportPDF()">⬇ تحميل PDF</button>
     </div>
 
+  </div>
+</div>
+
+<div id="listsView" class="view-hidden">
+  <div class="container">
+    <button class="btn-back" onclick="showView('home')">→ رجوع للقائمة الرئيسية</button>
+
+    <div class="section-card" style="padding:4px 0 8px">
+      <div id="savedListsEmpty" style="text-align:center;color:#999;padding:26px 16px;display:none">
+        لا توجد قوائم محفوظة بعد — احفظ أي قائمة من داخل أحد الخيارات وراح تظهر هنا.
+      </div>
+      <div id="savedListsBody"></div>
+    </div>
   </div>
 </div>
 
@@ -748,167 +838,316 @@ function showView(v) {
   document.getElementById('pkgView').classList.toggle('view-hidden', v !== 'pkg');
   document.getElementById('pageView').classList.toggle('view-hidden', v !== 'page');
   document.getElementById('matView').classList.toggle('view-hidden', v !== 'mat');
+  document.getElementById('listsView').classList.toggle('view-hidden', v !== 'lists');
+  if (v === 'lists') renderSavedLists();
   window.scrollTo(0, 0);
 }
+</script>
+
+<script>
+// ============================================================
+// SHARED LOCAL STORAGE FOR SAVED LISTS (across all three apps)
+// ============================================================
+const KawtharStorage = {
+  KEY: 'kawthar_saved_lists',
+  getAll() {
+    try { return JSON.parse(localStorage.getItem(this.KEY)) || []; } catch (e) { return []; }
+  },
+  saveAll(lists) {
+    try { localStorage.setItem(this.KEY, JSON.stringify(lists)); } catch (e) { /* storage full/unavailable */ }
+  },
+  makeId(type, name) { return type + '::' + name.trim(); },
+  save(type, name, phone, notes, data) {
+    const lists = this.getAll();
+    const id = this.makeId(type, name);
+    const idx = lists.findIndex(l => l.id === id);
+    const record = { id, type, name: name.trim(), phone: phone || '', notes: notes || '', data, savedAt: Date.now() };
+    if (idx >= 0) lists[idx] = record; else lists.push(record);
+    this.saveAll(lists);
+    return record;
+  },
+  get(id) { return this.getAll().find(l => l.id === id) || null; },
+  remove(id) { this.saveAll(this.getAll().filter(l => l.id !== id)); }
+};
+
+const KAWTHAR_TYPE_LABELS = {
+  pkg: '📦 سعر البكج',
+  page: '📄 سعر الصفحة',
+  mat: '🧾 اسعار المواد'
+};
+
+function renderSavedLists() {
+  const body = document.getElementById('savedListsBody');
+  const emptyMsg = document.getElementById('savedListsEmpty');
+  const lists = KawtharStorage.getAll().sort((a, b) => b.savedAt - a.savedAt);
+
+  if (lists.length === 0) {
+    emptyMsg.style.display = 'block';
+    body.innerHTML = '';
+    return;
+  }
+  emptyMsg.style.display = 'none';
+
+  body.innerHTML = lists.map(l => `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid #eee">
+      <div>
+        <div style="font-weight:700;color:#1a3a8f;font-size:14px">${l.name || '(بدون اسم)'}</div>
+        <div style="font-size:12px;color:#777;margin-top:3px">${KAWTHAR_TYPE_LABELS[l.type] || ''} — ${new Date(l.savedAt).toLocaleDateString('ar-IQ')}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button onclick="openSavedList('${l.id}')" style="background:#1a3a8f;color:#fff;border:none;border-radius:7px;padding:8px 14px;font-family:'Cairo',sans-serif;font-weight:700;font-size:12px;cursor:pointer">فتح</button>
+        <button onclick="deleteSavedList('${l.id}')" style="background:#e53935;color:#fff;border:none;border-radius:7px;padding:8px 10px;font-family:'Cairo',sans-serif;font-weight:700;font-size:12px;cursor:pointer">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function openSavedList(id) {
+  const rec = KawtharStorage.get(id);
+  if (!rec) return;
+  if (rec.type === 'pkg') { PkgApp.loadList(rec); showView('pkg'); }
+  else if (rec.type === 'page') { PageApp.loadList(rec); showView('page'); }
+  else if (rec.type === 'mat') { MatApp.loadList(rec); showView('mat'); }
+}
+
+function deleteSavedList(id) {
+  KawtharStorage.remove(id);
+  renderSavedLists();
+  const t = document.getElementById('toast');
+  t.textContent = '🗑 تم حذف القائمة';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+
+<script>
+// ============================================================
+// SHARED PDF DESIGN (used by all three price-list exports)
+// ============================================================
+const KawtharPDF = {
+  esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  },
+  money(n) {
+    return n % 1 === 0 ? n.toLocaleString('en') : n.toFixed(2);
+  },
+  th(align, size) {
+    return 'padding:14px 8px;border:1px solid #14307a;text-align:' + align + ';font-weight:800;font-size:' + (size || 17) + 'px;color:#fff;';
+  },
+  td(align, size, extra) {
+    return 'padding:12px 10px;border:1px solid #dbe2f4;text-align:' + align + ';font-size:' + (size || 19) + 'px;' + (extra || '');
+  },
+  header(logoSrc) {
+    return '<div style="background:#1a3a8f;padding:28px 24px 22px;text-align:center">'
+      + (logoSrc ? '<img src="' + logoSrc + '" style="width:96px;height:96px;border-radius:50%;border:3px solid #d4af37;object-fit:contain;background:#fff;display:block;margin:0 auto 12px">' : '')
+      + '<div style="color:#d9e3ff;font-size:18px;font-weight:700;direction:ltr;letter-spacing:1px">07708170195</div>'
+      + '<div style="color:#fff;font-size:36px;font-weight:900;margin-top:6px">مطبعة الكوثر</div>'
+      + '<div style="color:#c8d8ff;font-size:16px;margin-top:6px;line-height:1.7">مطبعة الكوثر لطباعة الكتب المدرسية والملازم والدفاتر الامتحانية</div>'
+      + '</div><div style="height:6px;background:#d4af37"></div>';
+  },
+  infoBand(o) {
+    const name = o.name ? this.esc(o.name) : '';
+    return '<div class="pdf-block" style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 28px;background:#f3f6fd">'
+      + '<div>' + (name ? '<div style="font-size:14px;color:#7a84a6;font-weight:700">' + this.esc(o.label) + '</div>'
+        + '<div style="font-size:26px;font-weight:900;color:#1a3a8f;margin-top:2px">' + name + '</div>' : '') + '</div>'
+      + '<div style="text-align:left">'
+      + '<div style="font-size:14px;color:#7a84a6;font-weight:700">التاريخ</div>'
+      + '<div style="font-size:18px;font-weight:800;color:#1b1f33">' + o.date + '</div>'
+      + (o.phone ? '<div style="font-size:15px;color:#555;margin-top:2px;direction:ltr">' + this.esc(o.phone) + '</div>' : '')
+      + '</div></div>';
+  },
+  gradeBar(name) {
+    return '<div class="pdf-row" style="background:#e8edf8;border-right:7px solid #d4af37;border-radius:8px;padding:11px 18px;margin-bottom:8px;font-size:21px;font-weight:900;color:#1a3a8f">الصف: ' + this.esc(name) + '</div>';
+  },
+  sectionTotal(text) {
+    return '<div class="pdf-row" style="background:#e3eaff;border:1px solid #c5d1f2;padding:11px 18px;font-size:17px;font-weight:800;color:#1a3a8f;text-align:left">' + text + '</div>';
+  },
+  grandTotal(o) {
+    return '<div class="pdf-block" style="margin-top:18px;background:#1a3a8f;border-radius:12px;padding:20px 24px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;gap:14px">'
+      + '<div style="width:8px;height:70px;background:#d4af37;border-radius:4px;flex-shrink:0"></div>'
+      + '<div style="flex:1;text-align:right">'
+      + '<div style="color:#fff;font-size:34px;font-weight:900;letter-spacing:0.5px">' + o.amount + ' د.ع</div>'
+      + '<div style="color:#c8d8ff;font-size:17px;margin-top:6px">' + o.words + ' دينار عراقي</div>'
+      + (o.extra ? '<div style="color:#d4af37;font-size:16px;font-weight:800;margin-top:6px">' + o.extra + '</div>' : '')
+      + '</div>'
+      + '<div style="color:#d4af37;font-size:20px;font-weight:900;white-space:nowrap">المجموع الكلي</div>'
+      + '</div></div>';
+  },
+  notes(text) {
+    if (!text) return '';
+    return '<div class="pdf-block" style="margin-top:14px;background:#fffbe6;border:1px solid #d4af37;border-radius:8px;padding:12px 18px;font-size:16px;color:#555">ملاحظات: ' + this.esc(text) + '</div>';
+  },
+  footer(text) {
+    return '<div class="pdf-block" style="margin-top:24px;background:#eef2fb;padding:12px 28px;display:flex;justify-content:space-between;font-size:13px;color:#7a84a6">'
+      + '<span>Al-Kawthar Press</span><span>' + text + '</span></div>';
+  }
+};
 </script>
 
 <script>
 var PkgApp = (function(){
 
 // ============================================================
-// DATA
+// DATA — one single list: every grade is a row, ticked rows are included
 // ============================================================
-let sections = [];
-let sectionId = 1;
-let isExporting = false;
+let rows = [];
 let rowId = 1;
+let isExporting = false;
 
-function defaultRows() {
-  const rows = [];
-  for (let i = 0; i < 9; i++) {
-    rows.push({ id: rowId++, subject: '', packagePrice: 0, qty: 0, total: 0 });
-  }
-  return rows;
+const GRADES = [
+  'الأول ابتدائي', 'الثاني ابتدائي', 'الثالث ابتدائي', 'الرابع ابتدائي', 'الخامس ابتدائي', 'السادس ابتدائي',
+  'الأول متوسط', 'الثاني متوسط', 'الثالث متوسط',
+  'الرابع العلمي', 'الرابع الأدبي', 'الخامس العلمي', 'الخامس الأدبي', 'السادس العلمي', 'السادس الأدبي'
+];
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function addSection() {
-  sections.push({
-    id: sectionId++,
-    rows: defaultRows()
+function fmt(n) {
+  return n % 1 === 0 ? n.toLocaleString('en') : n.toFixed(2);
+}
+
+function makeRow(name, key, checked) {
+  return { id: rowId++, key: key, name: name, checked: !!checked, price: 0, qty: 0, total: 0 };
+}
+
+function initRows() {
+  rows = GRADES.map(g => makeRow(g, g, false));
+}
+
+// a row counts only if it is ticked AND has a price or a count
+function isIncluded(r) {
+  return r.checked && (r.price > 0 || r.qty > 0);
+}
+
+function orderOf(r) {
+  const i = r.key ? GRADES.indexOf(r.key) : -1;
+  return i >= 0 ? i : 1000 + r.id;
+}
+
+function recalc(r) {
+  r.total = parseFloat((r.price * r.qty).toFixed(2));
+}
+
+function hasWork() {
+  return rows.some(isIncluded) || document.getElementById('schoolNamePkg').value.trim() !== '';
+}
+
+// start a brand-new empty list (asks first if there is unsaved work)
+function startNew() {
+  if (hasWork() && !confirm('سيتم مسح القائمة الحالية والبدء بقائمة جديدة. إذا ما حفظتها راح تضيع. هل تريد المتابعة؟')) return false;
+  rowId = 1;
+  initRows();
+  ['schoolNamePkg', 'schoolPhonePkg', 'schoolNotesPkg', 'globalPackagePricePkg'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
   });
   renderAll();
-  showToast('تمت إضافة مجموعة جديدة');
+  showToast('🆕 قائمة جديدة');
+  return true;
 }
 
-function deleteSection(id) {
-  sections = sections.filter(s => s.id !== id);
+function getGlobalPrice() {
+  return parseFloat(document.getElementById('globalPackagePricePkg').value) || 0;
+}
+
+// ============================================================
+// ACTIONS
+// ============================================================
+function toggleRow(id, checked) {
+  const r = rows.find(x => x.id === id);
+  if (!r) return;
+  r.checked = checked;
+  const gp = getGlobalPrice();
+  if (checked && gp > 0 && !r.price) { r.price = gp; recalc(r); }
   renderAll();
 }
 
-function addRowToSection(sectionId) {
-  const sec = sections.find(s => s.id === sectionId);
-  if (sec) {
-    sec.rows.push({ id: rowId++, subject: '', packagePrice: 0, qty: 0, total: 0 });
-    renderAll();
+function updateRow(id, field, value) {
+  const r = rows.find(x => x.id === id);
+  if (!r) return;
+  if (field === 'name') {
+    r.name = value;
+    return;
   }
-}
-
-function deleteRow(sectionId, rId) {
-  const sec = sections.find(s => s.id === sectionId);
-  if (sec) {
-    sec.rows = sec.rows.filter(r => r.id !== rId);
-    renderAll();
-  }
-}
-
-function updateRow(sectionId, rId, field, value) {
-  const sec = sections.find(s => s.id === sectionId);
-  if (!sec) return;
-  const row = sec.rows.find(r => r.id === rId);
-  if (!row) return;
-
-  if (field === 'subject') {
-    row.subject = value;
-  } else {
-    row[field] = parseFloat(value) || 0;
-  }
-
-  // السعر الكلي = سعر البكج × العدد المطلوب
-  row.total = parseFloat((row.packagePrice * row.qty).toFixed(2));
-
-  updateDisplays(sectionId, rId);
+  r[field] = parseFloat(value) || 0;
+  recalc(r);
+  const el = document.getElementById('total-pkg-' + id);
+  if (el) el.textContent = r.checked ? fmt(r.total) : '—';
   updateTotals();
+}
+
+function addCustomRow() {
+  const r = makeRow('', null, true);
+  const gp = getGlobalPrice();
+  if (gp > 0) r.price = gp;
+  rows.push(r);
+  renderAll();
+  showToast('تمت إضافة صف جديد — اكتب اسمه');
+  setTimeout(() => {
+    const inp = document.querySelector('#row-pkg-' + r.id + ' .subject-td input');
+    if (inp) inp.focus();
+  }, 50);
+}
+
+function deleteRow(id) {
+  const r = rows.find(x => x.id === id);
+  if (!r) return;
+  if ((r.price > 0 || r.qty > 0) && !confirm('سيتم حذف هذا الصف مع بياناته. هل أنت متأكد؟')) return;
+  rows = rows.filter(x => x.id !== id);
+  renderAll();
 }
 
 function applyGlobalPrice() {
-  const gp = parseFloat(document.getElementById('globalPackagePricePkg').value) || 0;
+  const gp = getGlobalPrice();
   if (gp <= 0) return;
-
-  sections.forEach(sec => {
-    sec.rows.forEach(row => {
-      row.packagePrice = gp;
-      row.total = parseFloat((row.packagePrice * row.qty).toFixed(2));
-    });
-  });
-
-  const area = document.getElementById('sectionsAreaPkg');
-  area.innerHTML = '';
-  sections.forEach(sec => area.appendChild(buildSectionEl(sec)));
-  updateTotals();
-  showToast('✅ تم تحديث سعر البكج في جميع المواد');
+  rows.forEach(r => { r.price = gp; recalc(r); });
+  renderAll();
+  showToast('✅ تم تحديث سعر البكج في جميع الصفوف');
 }
 
 // ============================================================
 // RENDER
 // ============================================================
-function renderAll() {
-  const area = document.getElementById('sectionsAreaPkg');
-  area.innerHTML = '';
-  sections.forEach(sec => {
-    area.appendChild(buildSectionEl(sec));
-  });
-  updateTotals();
-}
-
-function buildSectionEl(sec) {
-  const div = document.createElement('div');
-  div.className = 'section-card';
-  div.id = `sec-pkg-${sec.id}`;
-
-  div.innerHTML = `
-    <div class="section-top" style="justify-content:flex-end">
-      <div class="section-actions">
-        <button class="btn-add-subject" onclick="PkgApp.addRowToSection(${sec.id})">+ إضافة مادة</button>
-        <button class="btn-delete-section" onclick="PkgApp.deleteSection(${sec.id})" title="حذف المجموعة">🗑</button>
-      </div>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>اسم المادة</th>
-            <th>سعر البكج</th>
-            <th>العدد المطلوب</th>
-            <th>السعر الكلي</th>
-            <th>إجراء</th>
-          </tr>
-        </thead>
-        <tbody id="tbody-pkg-${sec.id}">
-          ${sec.rows.map(r => buildRowHTML(sec.id, r)).join('')}
-        </tbody>
-      </table>
-    </div>
-    <div class="section-total-bar" style="flex-direction:column;align-items:flex-start;gap:4px">
-      <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
-        <span class="label">المجموع لهذه المجموعة:</span>
-        <span class="value" id="sectotal-pkg-${sec.id}" style="text-decoration:none!important">0</span>
-      </div>
-      <div style="font-size:12px;color:#555;font-weight:600">
-        مجموع البكجات: <span id="secqty-pkg-${sec.id}" style="color:#1a3a8f;font-weight:700">0</span> بكج
-      </div>
-    </div>
-  `;
-  return div;
-}
-
-function buildRowHTML(secId, r) {
+function buildRowHTML(r) {
+  const dis = r.checked ? '' : 'disabled';
   return `
-    <tr id="row-pkg-${r.id}">
-      <td class="subject-td"><input type="text" value="${r.subject}" placeholder="اسم المادة" oninput="PkgApp.updateRow(${secId},${r.id},'subject',this.value)"></td>
-      <td><input type="number" value="${r.packagePrice || ''}" placeholder="0" min="0" oninput="PkgApp.updateRow(${secId},${r.id},'packagePrice',this.value)"></td>
-      <td><input type="number" value="${r.qty || ''}" placeholder="0" min="0" oninput="PkgApp.updateRow(${secId},${r.id},'qty',this.value)"></td>
-      <td><span class="price-display" id="total-pkg-${r.id}">${r.total % 1 === 0 ? r.total.toLocaleString('en') : r.total.toFixed(2)}</span></td>
-      <td><button class="btn-del-row" onclick="PkgApp.deleteRow(${secId},${r.id})" title="حذف">🗑</button></td>
+    <tr id="row-pkg-${r.id}" class="${r.checked ? '' : 'row-off'}">
+      <td class="check-td"><input type="checkbox" class="row-check" ${r.checked ? 'checked' : ''} onchange="PkgApp.toggleRow(${r.id}, this.checked)"></td>
+      <td class="subject-td"><div style="display:flex;align-items:center;gap:2px"><input type="text" value="${escapeHtml(r.name)}" placeholder="اسم الصف" oninput="PkgApp.updateRow(${r.id},'name',this.value)">${r.key === null ? `<button class="btn-del-row" onclick="PkgApp.deleteRow(${r.id})" title="حذف الصف" style="padding:2px">🗑</button>` : ''}</div></td>
+      <td><input type="number" inputmode="decimal" value="${r.price || ''}" placeholder="0" min="0" ${dis} oninput="PkgApp.updateRow(${r.id},'price',this.value)"></td>
+      <td><input type="number" inputmode="decimal" value="${r.qty || ''}" placeholder="0" min="0" ${dis} oninput="PkgApp.updateRow(${r.id},'qty',this.value)"></td>
+      <td><span class="price-display" id="total-pkg-${r.id}">${r.checked ? fmt(r.total) : '—'}</span></td>
     </tr>`;
 }
 
-function updateDisplays(secId, rId) {
-  const sec = sections.find(s => s.id === secId);
-  if (!sec) return;
-  const row = sec.rows.find(r => r.id === rId);
-  if (!row) return;
-  const totEl = document.getElementById(`total-pkg-${rId}`);
-  if (totEl) totEl.textContent = row.total % 1 === 0 ? row.total.toLocaleString('en') : row.total.toFixed(2);
+function renderAddBox() {
+  const box = document.getElementById('pkgAddBox');
+  if (!box) return;
+  const missing = GRADES.filter(g => !rows.some(r => r.key === g));
+  if (missing.length === 0) { box.innerHTML = ''; return; }
+  box.innerHTML = '<select class="add-grade-select" onchange="PkgApp.addGrade(this.value); this.value=\'\';">'
+    + '<option value="">+ إضافة صف من الصفوف الجاهزة…</option>'
+    + missing.map(g => '<option value="' + g + '">' + g + '</option>').join('')
+    + '</select>';
+}
+
+function addGrade(name) {
+  if (!name || rows.some(r => r.key === name)) return;
+  const r = makeRow(name, name, true);
+  const gp = getGlobalPrice();
+  if (gp > 0) { r.price = gp; recalc(r); }
+  rows.push(r);
+  rows.sort((a, b) => orderOf(a) - orderOf(b));
+  renderAll();
+}
+
+function renderAll() {
+  const body = document.getElementById('pkgRowsBody');
+  body.innerHTML = rows.map(buildRowHTML).join('');
+  renderAddBox();
+  updateTotals();
 }
 
 function numberToArabicWords(n) {
@@ -972,30 +1211,88 @@ function numberToArabicWords(n) {
   return result;
 }
 
+
 function updateTotals() {
-  let grand = 0;
-  sections.forEach(sec => {
-    const secTotal = sec.rows.reduce((a, r) => a + r.total, 0);
-    const secQty = sec.rows.reduce((a, r) => a + (parseFloat(r.qty) || 0), 0);
-    const el = document.getElementById(`sectotal-pkg-${sec.id}`);
-    if (el) el.textContent = secTotal.toLocaleString('en') + ' د.ع';
-    const qtyEl = document.getElementById(`secqty-pkg-${sec.id}`);
-    if (qtyEl) qtyEl.textContent = secQty.toLocaleString('en');
-    grand += secTotal;
+  let grand = 0, packs = 0, count = 0;
+  rows.forEach(r => {
+    if (!isIncluded(r)) return;
+    grand += r.total;
+    packs += (parseFloat(r.qty) || 0);
+    count++;
   });
   const grandRounded = Math.round(grand);
   const displayEl = document.getElementById('grandTotalDisplayPkg');
   const wordsEl = document.getElementById('grandTotalWordsPkg');
+  const packsEl = document.getElementById('pkgCountPkg');
+  const gradesEl = document.getElementById('pkgGradesCountPkg');
   if (displayEl) displayEl.textContent = grandRounded.toLocaleString('en');
   if (wordsEl) wordsEl.textContent = (grand === 0 ? 'صفر' : numberToArabicWords(grandRounded)) + ' دينار عراقي';
+  if (packsEl) packsEl.textContent = packs.toLocaleString('en');
+  if (gradesEl) gradesEl.textContent = count;
+}
+
+function sanitizeFileName(name) {
+  return name.replace(/[\\/:*?"<>|]/g, '-').trim() || 'مطبعة الكوثر';
 }
 
 // ============================================================
-// PDF EXPORT — uses html2canvas to screenshot the table perfectly
+// SAVE / LOAD
+// ============================================================
+function saveCurrentList() {
+  const name = document.getElementById('schoolNamePkg').value.trim();
+  if (!name) { showToast('اكتب اسم المدرسة أو المكتبة أولاً'); document.getElementById('schoolNamePkg').focus(); return; }
+  const selected = rows.filter(isIncluded);
+  if (selected.length === 0) { showToast('ضع ✓ على صف واحد على الأقل واكتب سعر البكج أو العدد قبل الحفظ'); return; }
+  KawtharStorage.save(
+    'pkg',
+    name,
+    document.getElementById('schoolPhonePkg').value,
+    document.getElementById('schoolNotesPkg').value,
+    { rows: selected }
+  );
+  showToast('✅ تم حفظ القائمة باسم: ' + name);
+}
+
+function loadList(record) {
+  document.getElementById('schoolNamePkg').value = record.name || '';
+  document.getElementById('schoolPhonePkg').value = record.phone || '';
+  document.getElementById('schoolNotesPkg').value = record.notes || '';
+
+  const data = record.data || {};
+  if (Array.isArray(data.rows)) {
+    rows = JSON.parse(JSON.stringify(data.rows)).filter(isIncluded);
+    if (rows.length === 0) initRows();
+  } else if (Array.isArray(data.sections)) {
+    // legacy format (one table per grade): one row per grade that has data, keeping its total
+    rowId = 1;
+    rows = data.sections.filter(sec => sec.rows.some(r => (parseFloat(r.qty) || 0) > 0 || (parseFloat(r.total) || 0) > 0)).map(sec => {
+      const qty = sec.rows.reduce((a, r) => a + (parseFloat(r.qty) || 0), 0);
+      const total = sec.rows.reduce((a, r) => a + (parseFloat(r.total) || 0), 0);
+      const r = makeRow(sec.grade || '', null, true);
+      r.qty = qty;
+      r.price = qty > 0 ? parseFloat((total / qty).toFixed(2)) : 0;
+      recalc(r);
+      return r;
+    });
+  } else {
+    initRows();
+  }
+  let maxRow = 0;
+  rows.forEach(r => { maxRow = Math.max(maxRow, r.id); });
+  rowId = maxRow + 1;
+  renderAll();
+  showToast('📂 تم فتح القائمة: ' + (record.name || ''));
+}
+
+// ============================================================
+// PDF EXPORT
 // ============================================================
 async function exportPDF() {
   if (isExporting) return;
-  if (sections.length === 0) { showToast('لا توجد بيانات للتصدير'); return; }
+  const nameInput = document.getElementById('schoolNamePkg');
+  if (!nameInput.value.trim()) { showToast('اكتب اسم المدرسة أو المكتبة أولاً'); nameInput.focus(); return; }
+  const chosen = rows.filter(isIncluded);
+  if (chosen.length === 0) { showToast('ضع ✓ على صف واحد على الأقل واكتب سعر البكج أو العدد'); return; }
   isExporting = true;
   const pdfBtn = document.querySelector('.btn-pdf-pkg');
   if (pdfBtn) pdfBtn.disabled = true;
@@ -1021,96 +1318,53 @@ async function exportPDF() {
 
     const { jsPDF } = window.jspdf;
 
-    const schoolName  = document.getElementById('schoolNamePkg').value  || 'مطبعة الكوثر';
-    const schoolPhone = document.getElementById('schoolPhonePkg').value || '';
-    const schoolNotes = document.getElementById('schoolNotesPkg').value || '';
+    const clientName  = document.getElementById('schoolNamePkg').value.trim();
+    const clientPhone = document.getElementById('schoolPhonePkg').value.trim();
+    const clientNotes = document.getElementById('schoolNotesPkg').value.trim();
     const today = new Date().toLocaleDateString('ar-IQ');
-    const grand = sections.reduce((a, s) => a + s.rows.reduce((b, r) => b + r.total, 0), 0);
+    const grand = chosen.reduce((a, r) => a + r.total, 0);
+    const packs = chosen.reduce((a, r) => a + (parseFloat(r.qty) || 0), 0);
 
     printDiv = document.createElement('div');
     printDiv.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:794px;background:#fff;font-family:Cairo,Arial,sans-serif;direction:rtl;';
 
     const logoSrc = document.querySelector('.logo-img') ? document.querySelector('.logo-img').src : '';
 
-    let sectionsHTML = '';
-    sections.forEach((sec, secIdx) => {
-      let rowsHTML = '';
-      let rowNum = 0;
-      for (const r of sec.rows) {
-        if (!r.subject && r.packagePrice === 0 && r.total === 0) continue;
-        const bg = rowNum % 2 === 0 ? '#f7f9ff' : '#ffffff';
-        rowsHTML += `<tr class="pdf-row" style="background:${bg}">
-        <td style="padding:6px 8px;border:1px solid #dde3f5;text-align:right">${r.subject || '-'}</td>
-        <td style="padding:6px 8px;border:1px solid #dde3f5;text-align:center;color:#c45000;font-weight:700">${r.packagePrice ? (r.packagePrice % 1 === 0 ? r.packagePrice.toLocaleString('en') : r.packagePrice.toFixed(2)) : '0'}</td>
-        <td style="padding:6px 8px;border:1px solid #dde3f5;text-align:center">${r.qty || 0}</td>
-        <td style="padding:6px 8px;border:1px solid #dde3f5;text-align:center;color:#c45000;font-weight:700">${r.total ? (r.total % 1 === 0 ? r.total.toLocaleString('en') : r.total.toFixed(2)) : '0'}</td>
+    let rowsHTML = '';
+    chosen.forEach((r, i) => {
+      const bg = i % 2 === 0 ? '#f5f8ff' : '#ffffff';
+      rowsHTML += `<tr class="pdf-row" style="background:${bg}">
+        <td style="${KawtharPDF.td('right', 20, 'font-weight:800;color:#1a3a8f;')}">${escapeHtml(r.name) || '-'}</td>
+        <td style="${KawtharPDF.td('center', 20, 'font-weight:700;')}">${r.price ? fmt(r.price) : '0'}</td>
+        <td style="${KawtharPDF.td('center', 20, 'font-weight:700;')}">${r.qty || 0}</td>
+        <td style="${KawtharPDF.td('center', 21, 'font-weight:900;color:#c45000;')}">${r.total ? fmt(r.total) : '0'}</td>
       </tr>`;
-        rowNum++;
-      }
-      if (!rowsHTML) rowsHTML = `<tr><td colspan="4" style="padding:10px;text-align:center;color:#aaa;border:1px solid #dde3f5">لا توجد مواد</td></tr>`;
-
-      const secTotal = sec.rows.reduce((a, r) => a + r.total, 0);
-
-      sectionsHTML += `
-    <div style="margin-bottom:20px">
-      <table style="width:100%;border-collapse:collapse;font-size:12px">
-        <thead>
-          <tr class="pdf-row" style="background:#1a3a8f;color:#fff">
-            <th style="padding:7px 8px;border:1px solid #1530a0;text-align:right;font-weight:700">اسم المادة</th>
-            <th style="padding:7px 8px;border:1px solid #1530a0;text-align:center;font-weight:700">سعر البكج</th>
-            <th style="padding:7px 8px;border:1px solid #1530a0;text-align:center;font-weight:700">العدد المطلوب</th>
-            <th style="padding:7px 8px;border:1px solid #1530a0;text-align:center;font-weight:700">السعر الكلي</th>
-          </tr>
-        </thead>
-        <tbody>${rowsHTML}</tbody>
-      </table>
-      <div class="pdf-row" style="background:#dce6ff;border:1px solid #1a3a8f;padding:6px 14px;text-align:left;font-size:13px;font-weight:700;color:#1a3a8f;border-radius:0 0 4px 4px">
-        المجموع: ${Math.round(secTotal).toLocaleString('en')} د.ع &nbsp;&nbsp;|&nbsp;&nbsp; مجموع البكجات: ${sec.rows.reduce((a,r)=>a+(parseFloat(r.qty)||0),0).toLocaleString('en')} بكج
-      </div>
-    </div>`;
     });
 
     printDiv.innerHTML = `
-    <div style="padding:0 0 20px 0">
-      <div style="background:#1a3a8f;padding:20px 20px 16px;text-align:center">
-        ${logoSrc ? `<img src="${logoSrc}" style="width:64px;height:64px;border-radius:50%;border:2px solid #d4af37;object-fit:contain;background:#fff;display:block;margin:0 auto 8px">` : ''}
-        <div style="color:#c8d8ff;font-size:12px;font-weight:700;direction:ltr">07708170195</div>
-        <div style="color:#fff;font-size:20px;font-weight:900;margin-top:6px">مطبعة الكوثر</div>
-        <div style="color:#c8d8ff;font-size:11px;margin-top:2px">مطبعة الكوثر لطباعة الكتب المدرسية والملازم والدفاتر الامتحانية</div>
-        <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:14px;margin-top:8px;font-size:10px;color:#c8d8ff">
-          <span>${today}</span>
-          ${schoolName ? `<span>المدرسة: ${schoolName}</span>` : ''}
-          ${schoolPhone ? `<span>هاتف: ${schoolPhone}</span>` : ''}
-        </div>
+    <div style="padding:0 0 24px 0">
+      ${KawtharPDF.header(logoSrc)}
+      ${KawtharPDF.infoBand({ label: 'اسم المدرسة / المكتبة', name: clientName, phone: clientPhone, date: today })}
+      <div style="padding:22px 26px 6px">
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr class="pdf-row" style="background:#1a3a8f">
+              <th style="${KawtharPDF.th('right', 18)}width:34%">اسم الصف</th>
+              <th style="${KawtharPDF.th('center', 18)}">سعر البكج</th>
+              <th style="${KawtharPDF.th('center', 18)}">العدد المطلوب</th>
+              <th style="${KawtharPDF.th('center', 18)}">السعر الكلي</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHTML}</tbody>
+        </table>
+        ${KawtharPDF.grandTotal({ amount: Math.round(grand).toLocaleString('en'), words: numberToArabicWords(Math.round(grand)), extra: 'مجموع البكجات: ' + packs.toLocaleString('en') + ' بكج' })}
+        ${KawtharPDF.notes(clientNotes)}
       </div>
-      <div style="height:3px;background:#d4af37"></div>
-
-      <div style="padding:16px 20px">
-        ${sectionsHTML}
-
-        <div class="pdf-block" style="background:#1a3a8f;border-radius:6px;padding:12px 16px;margin-top:8px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="width:6px;height:36px;background:#d4af37;border-radius:3px;margin-left:10px;flex-shrink:0"></div>
-            <div style="flex:1;text-align:right">
-              <div style="color:#fff;font-size:18px;font-weight:900;letter-spacing:1px">${Math.round(grand).toLocaleString('en')} د.ع</div>
-              <div style="color:#c8d8ff;font-size:12px;margin-top:4px">${numberToArabicWords(Math.round(grand))} دينار عراقي</div>
-            </div>
-            <div style="color:#d4af37;font-size:13px;font-weight:700;margin-right:10px">المجموع الكلي</div>
-          </div>
-        </div>
-        ${schoolNotes ? `<div class="pdf-block" style="background:#fffbe6;border:1px solid #d4af37;border-radius:6px;padding:8px 14px;margin-top:10px;font-size:12px;color:#555">ملاحظات: ${schoolNotes}</div>` : ''}
-      </div>
-
-      <div class="pdf-block" style="background:#f0f3fc;padding:6px 20px;display:flex;justify-content:space-between;font-size:9px;color:#888;margin-top:10px">
-        <span>Al-Kawthar Press</span>
-        <span>مطبعة الكوثر — قوائم المدارس على سعر البكج</span>
-      </div>
+      ${KawtharPDF.footer('مطبعة الكوثر — قوائم المدارس على سعر البكج')}
     </div>`;
 
     document.body.appendChild(printDiv);
 
-    // Measure safe break points (block tops/bottoms in CSS px) so page slicing
-    // never cuts through the middle of a section, a total bar, or the footer.
     const printRect = printDiv.getBoundingClientRect();
     const printDivWidthPx = printDiv.offsetWidth || 794;
     const breakPoints = Array.from(printDiv.querySelectorAll('.pdf-row, .pdf-block')).map(el => {
@@ -1170,7 +1424,7 @@ async function exportPDF() {
       }
     }
 
-    const fname = sanitizeFileName(schoolName || 'مطبعة الكوثر') + '.pdf';
+    const fname = sanitizeFileName(clientName || 'مطبعة الكوثر') + '.pdf';
     const pdfBlob = doc.output('blob');
     const blobUrl = URL.createObjectURL(pdfBlob);
     const a = document.createElement('a');
@@ -1191,10 +1445,6 @@ async function exportPDF() {
   }
 }
 
-function sanitizeFileName(name) {
-  return name.replace(/[\\/:*?"<>|]/g, '-').trim() || 'مطبعة الكوثر';
-}
-
 // ============================================================
 // TOAST
 // ============================================================
@@ -1206,11 +1456,14 @@ function showToast(msg) {
 }
 
 // ============================================================
-// INIT — start with one section
+// INIT
 // ============================================================
-addSection();
-return { addSection, deleteSection, addRowToSection, deleteRow, updateRow, applyGlobalPrice, exportPDF };
+initRows();
+renderAll();
+
+return { startNew, toggleRow, updateRow, addCustomRow, addGrade, deleteRow, applyGlobalPrice, saveCurrentList, loadList, exportPDF };
 })();
+
 
 </script>
 
@@ -1485,6 +1738,8 @@ function updateTotals() {
 // ============================================================
 async function exportPDF() {
   if (isExporting) return;
+  const nameInput = document.getElementById('schoolNamePage');
+  if (!nameInput.value.trim()) { showToast('اكتب اسم المدرسة أو المكتبة أولاً'); nameInput.focus(); return; }
   if (sections.length === 0) { showToast('لا توجد بيانات للتصدير'); return; }
   isExporting = true;
   const pdfBtn = document.querySelector('.btn-pdf-page');
@@ -1525,94 +1780,59 @@ async function exportPDF() {
     const logoSrc = document.querySelector('.logo-img') ? document.querySelector('.logo-img').src : '';
 
     let sectionsHTML = '';
-    sections.forEach((sec, secIdx) => {
-      const hasData = sec.rows.some(r => r.subject || r.pages > 0 || r.total > 0);
-
+    sections.forEach((sec) => {
       let rowsHTML = '';
       let rowNum = 0;
       for (const r of sec.rows) {
         if (!r.subject && r.pages === 0 && r.total === 0) continue;
-        const bg = rowNum % 2 === 0 ? '#f7f9ff' : '#ffffff';
+        const bg = rowNum % 2 === 0 ? '#f5f8ff' : '#ffffff';
         rowsHTML += `<tr class="pdf-row" style="background:${bg}">
-        <td style="padding:6px 8px;border:1px solid #dde3f5;text-align:right">${r.subject || '-'}</td>
-        <td style="padding:6px 8px;border:1px solid #dde3f5;text-align:center">${r.pages || 0}</td>
-        <td style="padding:6px 8px;border:1px solid #dde3f5;text-align:center">${r.coverPrice || 0}</td>
-        <td style="padding:6px 8px;border:1px solid #dde3f5;text-align:center">${r.coverAdd || 0}</td>
-        <td style="padding:6px 8px;border:1px solid #dde3f5;text-align:center;color:#c45000;font-weight:700">${r.bookPrice ? (r.bookPrice % 1 === 0 ? r.bookPrice.toLocaleString('en') : r.bookPrice.toFixed(2)) : '0'}</td>
-        <td style="padding:6px 8px;border:1px solid #dde3f5;text-align:center">${r.qty || 0}</td>
-        <td style="padding:6px 8px;border:1px solid #dde3f5;text-align:center;color:#c45000;font-weight:700">${r.total ? (r.total % 1 === 0 ? r.total.toLocaleString('en') : r.total.toFixed(2)) : '0'}</td>
+        <td style="${KawtharPDF.td('right', 16, 'font-weight:800;color:#1a3a8f;')}">${KawtharPDF.esc(r.subject) || '-'}</td>
+        <td style="${KawtharPDF.td('center', 16)}">${r.pages || 0}</td>
+        <td style="${KawtharPDF.td('center', 16)}">${r.coverPrice || 0}</td>
+        <td style="${KawtharPDF.td('center', 16)}">${r.coverAdd || 0}</td>
+        <td style="${KawtharPDF.td('center', 17, 'font-weight:800;color:#c45000;')}">${r.bookPrice ? KawtharPDF.money(r.bookPrice) : '0'}</td>
+        <td style="${KawtharPDF.td('center', 16, 'font-weight:700;')}">${r.qty || 0}</td>
+        <td style="${KawtharPDF.td('center', 17, 'font-weight:900;color:#c45000;')}">${r.total ? KawtharPDF.money(r.total) : '0'}</td>
       </tr>`;
         rowNum++;
       }
-      if (!rowsHTML) rowsHTML = `<tr><td colspan="7" style="padding:10px;text-align:center;color:#aaa;border:1px solid #dde3f5">لا توجد مواد</td></tr>`;
+      if (!rowsHTML) rowsHTML = `<tr><td colspan="7" style="padding:12px;text-align:center;color:#aaa;border:1px solid #dbe2f4;font-size:16px">لا توجد مواد</td></tr>`;
 
       const secTotal = sec.rows.reduce((a, r) => a + r.total, 0);
+      const secQty = sec.rows.reduce((a, r) => a + (parseFloat(r.qty) || 0), 0);
 
       sectionsHTML += `
-    <div style="margin-bottom:20px">
-      <div class="pdf-row" style="background:#e8edf8;border:1.5px solid #1a3a8f;border-radius:6px;padding:7px 14px;margin-bottom:4px;display:flex;align-items:center;gap:8px">
-        <span style="display:inline-block;width:5px;height:20px;background:#1a3a8f;border-radius:3px;margin-left:8px"></span>
-        <span style="font-size:13px;font-weight:700;color:#1a3a8f">الصف: ${sec.grade}</span>
-      </div>
-      <table style="width:100%;border-collapse:collapse;font-size:12px">
+    <div style="margin-bottom:26px">
+      ${KawtharPDF.gradeBar(sec.grade)}
+      <table style="width:100%;border-collapse:collapse">
         <thead>
-          <tr class="pdf-row" style="background:#1a3a8f;color:#fff">
-            <th style="padding:7px 8px;border:1px solid #1530a0;text-align:right;font-weight:700">اسم المادة</th>
-            <th style="padding:7px 8px;border:1px solid #1530a0;text-align:center;font-weight:700">عدد الصفحات</th>
-            <th style="padding:7px 8px;border:1px solid #1530a0;text-align:center;font-weight:700">سعر الصفحة</th>
-            <th style="padding:7px 8px;border:1px solid #1530a0;text-align:center;font-weight:700">سعر الغلاف</th>
-            <th style="padding:7px 8px;border:1px solid #1530a0;text-align:center;font-weight:700">سعر الكتاب</th>
-            <th style="padding:7px 8px;border:1px solid #1530a0;text-align:center;font-weight:700">العدد المطلوب</th>
-            <th style="padding:7px 8px;border:1px solid #1530a0;text-align:center;font-weight:700">السعر الكلي</th>
+          <tr class="pdf-row" style="background:#1a3a8f">
+            <th style="${KawtharPDF.th('right', 15)}">اسم المادة</th>
+            <th style="${KawtharPDF.th('center', 15)}">عدد الصفحات</th>
+            <th style="${KawtharPDF.th('center', 15)}">سعر الصفحة</th>
+            <th style="${KawtharPDF.th('center', 15)}">سعر الغلاف</th>
+            <th style="${KawtharPDF.th('center', 15)}">سعر الكتاب</th>
+            <th style="${KawtharPDF.th('center', 15)}">العدد المطلوب</th>
+            <th style="${KawtharPDF.th('center', 15)}">السعر الكلي</th>
           </tr>
         </thead>
         <tbody>${rowsHTML}</tbody>
       </table>
-      <div class="pdf-row" style="background:#dce6ff;border:1px solid #1a3a8f;padding:6px 14px;text-align:left;font-size:13px;font-weight:700;color:#1a3a8f;border-radius:0 0 4px 4px">
-        المجموع: ${Math.round(secTotal).toLocaleString('en')} د.ع &nbsp;&nbsp;|&nbsp;&nbsp; مجموع الكتب: ${sec.rows.reduce((a,r)=>a+(parseFloat(r.qty)||0),0).toLocaleString('en')} كتاب
-      </div>
+      ${KawtharPDF.sectionTotal('المجموع: ' + Math.round(secTotal).toLocaleString('en') + ' د.ع &nbsp;&nbsp;|&nbsp;&nbsp; مجموع الكتب: ' + secQty.toLocaleString('en') + ' كتاب')}
     </div>`;
     });
 
     printDiv.innerHTML = `
-    <div style="padding:0 0 20px 0">
-      <!-- HEADER -->
-      <div style="background:#1a3a8f;padding:20px 20px 16px;text-align:center">
-        ${logoSrc ? `<img src="${logoSrc}" style="width:64px;height:64px;border-radius:50%;border:2px solid #d4af37;object-fit:contain;background:#fff;display:block;margin:0 auto 8px">` : ''}
-        <div style="color:#c8d8ff;font-size:12px;font-weight:700;direction:ltr">07708170195</div>
-        <div style="color:#fff;font-size:20px;font-weight:900;margin-top:6px">مطبعة الكوثر</div>
-        <div style="color:#c8d8ff;font-size:11px;margin-top:2px">مطبعة الكوثر لطباعة الكتب المدرسية والملازم والدفاتر الامتحانية</div>
-        <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:14px;margin-top:8px;font-size:10px;color:#c8d8ff">
-          <span>${today}</span>
-          ${schoolName ? `<span>المدرسة: ${schoolName}</span>` : ''}
-          ${schoolPhone ? `<span>هاتف: ${schoolPhone}</span>` : ''}
-        </div>
-      </div>
-      <div style="height:3px;background:#d4af37"></div>
-
-      <!-- BODY -->
-      <div style="padding:16px 20px">
+    <div style="padding:0 0 24px 0">
+      ${KawtharPDF.header(logoSrc)}
+      ${KawtharPDF.infoBand({ label: 'اسم المدرسة / المكتبة', name: schoolName, phone: schoolPhone, date: today })}
+      <div style="padding:22px 26px 6px">
         ${sectionsHTML}
-
-        <!-- GRAND TOTAL -->
-        <div class="pdf-block" style="background:#1a3a8f;border-radius:6px;padding:12px 16px;margin-top:8px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="width:6px;height:36px;background:#d4af37;border-radius:3px;margin-left:10px;flex-shrink:0"></div>
-            <div style="flex:1;text-align:right">
-              <div style="color:#fff;font-size:18px;font-weight:900;letter-spacing:1px">${Math.round(grand).toLocaleString('en')} د.ع</div>
-              <div style="color:#c8d8ff;font-size:12px;margin-top:4px">${numberToArabicWords(Math.round(grand))} دينار عراقي</div>
-            </div>
-            <div style="color:#d4af37;font-size:13px;font-weight:700;margin-right:10px">المجموع الكلي</div>
-          </div>
-        </div>
-        ${schoolNotes ? `<div class="pdf-block" style="background:#fffbe6;border:1px solid #d4af37;border-radius:6px;padding:8px 14px;margin-top:10px;font-size:12px;color:#555">ملاحظات: ${schoolNotes}</div>` : ''}
+        ${KawtharPDF.grandTotal({ amount: Math.round(grand).toLocaleString('en'), words: numberToArabicWords(Math.round(grand)) })}
+        ${KawtharPDF.notes(schoolNotes)}
       </div>
-
-      <!-- FOOTER -->
-      <div class="pdf-block" style="background:#f0f3fc;padding:6px 20px;display:flex;justify-content:space-between;font-size:9px;color:#888;margin-top:10px">
-        <span>Al-Kawthar Press</span>
-        <span>مطبعة الكوثر — قائمة الكتب المدرسية</span>
-      </div>
+      ${KawtharPDF.footer('مطبعة الكوثر — قائمة الكتب المدرسية')}
     </div>`;
 
     document.body.appendChild(printDiv);
@@ -1718,7 +1938,51 @@ function showToast(msg) {
 // INIT — start with one section
 // ============================================================
 addSection();
-return { addSection, deleteSection, addRowToSection, deleteRow, updateRow, updateGrade, applyGlobalPrices, exportPDF };
+function startNew() {
+  const hasWork = document.getElementById('schoolNamePage').value.trim() !== ''
+    || sections.some(s => s.rows.some(r => r.subject || r.pages > 0 || r.qty > 0 || r.total > 0));
+  if (hasWork && !confirm('سيتم مسح القائمة الحالية والبدء بقائمة جديدة. إذا ما حفظتها راح تضيع. هل تريد المتابعة؟')) return;
+  sections = [];
+  sectionId = 1;
+  rowId = 1;
+  ['schoolNamePage', 'schoolPhonePage', 'schoolNotesPage', 'globalPagePricePage', 'globalCoverPricePage'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  addSection();
+  showToast('🆕 قائمة جديدة');
+}
+
+function saveCurrentList() {
+  const name = document.getElementById('schoolNamePage').value.trim();
+  if (!name) { showToast('اكتب اسم المدرسة أو المكتبة أولاً'); document.getElementById('schoolNamePage').focus(); return; }
+  KawtharStorage.save(
+    'page',
+    name,
+    document.getElementById('schoolPhonePage').value,
+    document.getElementById('schoolNotesPage').value,
+    { sections }
+  );
+  showToast('✅ تم حفظ القائمة باسم: ' + name);
+}
+
+function loadList(record) {
+  document.getElementById('schoolNamePage').value = record.name || '';
+  document.getElementById('schoolPhonePage').value = record.phone || '';
+  document.getElementById('schoolNotesPage').value = record.notes || '';
+  sections = JSON.parse(JSON.stringify((record.data && record.data.sections) || []));
+  let maxSec = 0, maxRow = 0;
+  sections.forEach(s => {
+    maxSec = Math.max(maxSec, s.id);
+    s.rows.forEach(r => { maxRow = Math.max(maxRow, r.id); });
+  });
+  sectionId = maxSec + 1;
+  rowId = maxRow + 1;
+  renderAll();
+  showToast('📂 تم فتح القائمة: ' + (record.name || ''));
+}
+
+return { startNew, addSection, deleteSection, addRowToSection, deleteRow, updateRow, updateGrade, applyGlobalPrices, saveCurrentList, loadList, exportPDF };
 })();
 
 </script>
@@ -1915,63 +2179,38 @@ async function exportPDF() {
     let rowNum = 0;
     for (const r of rows) {
       if (!r.name && r.price === 0 && r.total === 0) continue;
-      const bg = rowNum % 2 === 0 ? '#f7f9ff' : '#ffffff';
+      const bg = rowNum % 2 === 0 ? '#f5f8ff' : '#ffffff';
       rowsHTML += `<tr class="pdf-row" style="background:${bg}">
-        <td style="padding:6px 8px;border:1px solid #dde3f5;text-align:right">${r.name || '-'}</td>
-        <td style="padding:6px 8px;border:1px solid #dde3f5;text-align:center">${r.price ? (r.price % 1 === 0 ? r.price.toLocaleString('en') : r.price.toFixed(2)) : '0'}</td>
-        <td style="padding:6px 8px;border:1px solid #dde3f5;text-align:center">${r.qty || 0}</td>
-        <td style="padding:6px 8px;border:1px solid #dde3f5;text-align:center;color:#c45000;font-weight:700">${r.total ? (r.total % 1 === 0 ? r.total.toLocaleString('en') : r.total.toFixed(2)) : '0'}</td>
+        <td style="${KawtharPDF.td('right', 20, 'font-weight:800;color:#1a3a8f;')}">${KawtharPDF.esc(r.name) || '-'}</td>
+        <td style="${KawtharPDF.td('center', 20, 'font-weight:700;')}">${r.price ? KawtharPDF.money(r.price) : '0'}</td>
+        <td style="${KawtharPDF.td('center', 20, 'font-weight:700;')}">${r.qty || 0}</td>
+        <td style="${KawtharPDF.td('center', 21, 'font-weight:900;color:#c45000;')}">${r.total ? KawtharPDF.money(r.total) : '0'}</td>
       </tr>`;
       rowNum++;
     }
-    if (!rowsHTML) rowsHTML = `<tr><td colspan="4" style="padding:10px;text-align:center;color:#aaa;border:1px solid #dde3f5">لا توجد مواد</td></tr>`;
+    if (!rowsHTML) rowsHTML = `<tr><td colspan="4" style="padding:14px;text-align:center;color:#aaa;border:1px solid #dbe2f4;font-size:17px">لا توجد مواد</td></tr>`;
 
     printDiv.innerHTML = `
-    <div style="padding:0 0 20px 0">
-      <div style="background:#1a3a8f;padding:20px 20px 16px;text-align:center">
-        ${logoSrc ? `<img src="${logoSrc}" style="width:64px;height:64px;border-radius:50%;border:2px solid #d4af37;object-fit:contain;background:#fff;display:block;margin:0 auto 8px">` : ''}
-        <div style="color:#c8d8ff;font-size:12px;font-weight:700;direction:ltr">07708170195</div>
-        <div style="color:#fff;font-size:20px;font-weight:900;margin-top:6px">مطبعة الكوثر</div>
-        <div style="color:#c8d8ff;font-size:11px;margin-top:2px">مطبعة الكوثر لطباعة الكتب المدرسية والملازم والدفاتر الامتحانية</div>
-        <div style="color:#fff;font-size:13px;font-weight:700;margin-top:8px">قائمة اسعار المواد</div>
-        <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:14px;margin-top:8px;font-size:10px;color:#c8d8ff">
-          <span>${today}</span>
-          ${customerName ? `<span>الزبون: ${customerName}</span>` : ''}
-          ${customerPhone ? `<span>هاتف: ${customerPhone}</span>` : ''}
-        </div>
-      </div>
-      <div style="height:3px;background:#d4af37"></div>
-
-      <div style="padding:16px 20px">
-        <table style="width:100%;border-collapse:collapse;font-size:12px">
+    <div style="padding:0 0 24px 0">
+      ${KawtharPDF.header(logoSrc)}
+      ${KawtharPDF.infoBand({ label: 'الزبون', name: customerName, phone: customerPhone, date: today })}
+      <div style="padding:22px 26px 6px">
+        <div style="font-size:21px;font-weight:900;color:#1a3a8f;margin-bottom:10px">قائمة اسعار المواد</div>
+        <table style="width:100%;border-collapse:collapse">
           <thead>
-            <tr class="pdf-row" style="background:#1a3a8f;color:#fff">
-              <th style="padding:7px 8px;border:1px solid #1530a0;text-align:right;font-weight:700">اسم المادة</th>
-              <th style="padding:7px 8px;border:1px solid #1530a0;text-align:center;font-weight:700">السعر</th>
-              <th style="padding:7px 8px;border:1px solid #1530a0;text-align:center;font-weight:700">العدد</th>
-              <th style="padding:7px 8px;border:1px solid #1530a0;text-align:center;font-weight:700">السعر الكلي</th>
+            <tr class="pdf-row" style="background:#1a3a8f">
+              <th style="${KawtharPDF.th('right', 18)}width:40%">اسم المادة</th>
+              <th style="${KawtharPDF.th('center', 18)}">السعر</th>
+              <th style="${KawtharPDF.th('center', 18)}">العدد</th>
+              <th style="${KawtharPDF.th('center', 18)}">السعر الكلي</th>
             </tr>
           </thead>
           <tbody>${rowsHTML}</tbody>
         </table>
-
-        <div class="pdf-block" style="background:#1a3a8f;border-radius:6px;padding:12px 16px;margin-top:12px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="width:6px;height:36px;background:#d4af37;border-radius:3px;margin-left:10px;flex-shrink:0"></div>
-            <div style="flex:1;text-align:right">
-              <div style="color:#fff;font-size:18px;font-weight:900;letter-spacing:1px">${Math.round(grand).toLocaleString('en')} د.ع</div>
-              <div style="color:#c8d8ff;font-size:12px;margin-top:4px">${numberToArabicWords(Math.round(grand))} دينار عراقي</div>
-            </div>
-            <div style="color:#d4af37;font-size:13px;font-weight:700;margin-right:10px">المجموع الكلي</div>
-          </div>
-        </div>
-        ${customerNotes ? `<div class="pdf-block" style="background:#fffbe6;border:1px solid #d4af37;border-radius:6px;padding:8px 14px;margin-top:10px;font-size:12px;color:#555">ملاحظات: ${customerNotes}</div>` : ''}
+        ${KawtharPDF.grandTotal({ amount: Math.round(grand).toLocaleString('en'), words: numberToArabicWords(Math.round(grand)) })}
+        ${KawtharPDF.notes(customerNotes)}
       </div>
-
-      <div class="pdf-block" style="background:#f0f3fc;padding:6px 20px;display:flex;justify-content:space-between;font-size:9px;color:#888;margin-top:10px">
-        <span>Al-Kawthar Press</span>
-        <span>مطبعة الكوثر — قائمة اسعار المواد</span>
-      </div>
+      ${KawtharPDF.footer('مطبعة الكوثر — قائمة اسعار المواد')}
     </div>`;
 
     document.body.appendChild(printDiv);
@@ -2072,7 +2311,46 @@ function showToast(msg) {
 rows = defaultRows();
 renderAll();
 
-return { addRow, deleteRow, updateRow, exportPDF };
+function startNew() {
+  const hasWork = document.getElementById('customerNameMat').value.trim() !== ''
+    || rows.some(r => r.name || r.price > 0 || r.qty > 0);
+  if (hasWork && !confirm('سيتم مسح القائمة الحالية والبدء بقائمة جديدة. إذا ما حفظتها راح تضيع. هل تريد المتابعة؟')) return;
+  rowId = 1;
+  rows = defaultRows();
+  ['customerNameMat', 'customerPhoneMat', 'customerNotesMat'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  renderAll();
+  showToast('🆕 قائمة جديدة');
+}
+
+function saveCurrentList() {
+  const name = document.getElementById('customerNameMat').value.trim();
+  if (!name) { showToast('الرجاء إدخال الاسم أولاً'); return; }
+  KawtharStorage.save(
+    'mat',
+    name,
+    document.getElementById('customerPhoneMat').value,
+    document.getElementById('customerNotesMat').value,
+    { rows }
+  );
+  showToast('✅ تم حفظ القائمة باسم: ' + name);
+}
+
+function loadList(record) {
+  document.getElementById('customerNameMat').value = record.name || '';
+  document.getElementById('customerPhoneMat').value = record.phone || '';
+  document.getElementById('customerNotesMat').value = record.notes || '';
+  rows = JSON.parse(JSON.stringify((record.data && record.data.rows) || []));
+  let maxRow = 0;
+  rows.forEach(r => { maxRow = Math.max(maxRow, r.id); });
+  rowId = maxRow + 1;
+  renderAll();
+  showToast('📂 تم فتح القائمة: ' + (record.name || ''));
+}
+
+return { startNew, addRow, deleteRow, updateRow, saveCurrentList, loadList, exportPDF };
 })();
 </script>
 
